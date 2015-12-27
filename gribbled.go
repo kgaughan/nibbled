@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-var addr, root, userDir string
+var bind, root, userDir string
 var cgi bool
 
 func main() {
-	flag.StringVar(&addr, "addr", ":70", "Interface/port to bind to.")
+	flag.StringVar(&bind, "bind", ":70", "Interface/port to bind to.")
 	flag.StringVar(&root, "root", "/srv/gopher", "Directory to serve from.")
 	flag.BoolVar(&cgi, "cgi", false, "Allow CGI scripts.")
 	flag.StringVar(&userDir, "userdir", "", "Expose user directories over gopher.")
 	flag.Parse()
 
-	ln, err := net.Listen("tcp", addr)
+	ln, err := net.Listen("tcp", bind)
 	if err != nil {
 		panic(err)
 	}
