@@ -36,13 +36,13 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	reader := bufio.NewReader(conn)
-	if line, err := reader.ReadString('\n'); err != nil {
-		log.Print(err)
-	} else {
+	scanner := bufio.NewScanner(conn)
+	if scanner.Scan() {
 		// Format is <selector>TAB<query>CRLF
-		parts := strings.SplitN(strings.TrimRight(line, "\r\n"), "\t", 2)
+		parts := strings.SplitN(strings.TrimRight(scanner.Text(), "\r\n"), "\t", 2)
 		log.Printf("%q", parts)
 		conn.Write([]byte("iMessage\t\t\t\r\n"))
+	} else if err := scanner.Err(); err != nil {
+		log.Print(err)
 	}
 }
