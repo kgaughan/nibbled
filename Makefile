@@ -1,9 +1,7 @@
-REPO=github.com/kgaughan/gribbled
-
-build:
-	go build -o ${GOPATH}/bin/gribbled $(REPO)
+gribbled: gribbled.go
+	CGO_ENABLED=0 go build -ldflags '-s -w'
 
 test:
-	go test $(REPO)
+	go test
 
-.PHONY: build test
+.PHONY: test
