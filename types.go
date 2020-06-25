@@ -66,7 +66,7 @@ func init() {
 
 func filenameToGopherType(filename string) string {
 	mimetype := mime.TypeByExtension(filepath.Ext(filename))
-	if ft, ok := ftPrefixes.Get(mimetype); ok {
+	if _, ft, ok := ftPrefixes.LongestPrefix(mimetype); ok {
 		return ft.(string)
 	} else {
 		return "9"
