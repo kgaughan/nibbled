@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"flag"
+	"io"
 	"log"
 	"net"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -55,8 +57,41 @@ func handleConnection(conn net.Conn) {
 	if scanner.Scan() {
 		// Format is <selector>TAB<query>CRLF
 		parts := strings.SplitN(strings.TrimRight(scanner.Text(), "\r\n"), "\t", 2)
+
+		// Make sure the selector is safe
+		parts[0] = path.Clean(parts[0])
+		if parts[0] == "." {
+			parts[0] = ""
+		}
 		log.Printf("%q", parts)
-		conn.Write([]byte("iMessage\t\t\t\r\n"))
+		if strings.HasPrefix(parts[0], "..") {
+			writeError(conn, "Bad selector")
+			return
+		}
+
+		localPath := filepath.Join(root, parts[0])
+		if fi, err := os.Stat(localPath); err == nil {
+			if fi.IsDir() {
+				if err := listDirectory(conn, localPath, parts[0]); err != nil {
+					log.Print(err)
+					return
+				}
+			} else if f, err := os.Open(localPath); err != nil {
+				log.Print(err)
+				writeError(conn, "Could not open")
+				return
+			} else {
+				defer f.Close()
+				if _, err := io.Copy(conn, f); err != nil {
+					log.Print(err)
+					return
+				}
+			}
+		} else {
+			log.Print(err)
+			writeError(conn, "Bad selector")
+			return
+		}
 	} else if err := scanner.Err(); err != nil {
 		log.Print(err)
 	}

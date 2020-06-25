@@ -4,13 +4,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
-
-func writeLine(out io.Writer, fields ...string) error {
-	_, err := out.Write([]byte(strings.Join(fields, "\t") + "\r\n"))
-	return err
-}
 
 func getFileType(entry os.FileInfo) string {
 	if entry.IsDir() {
@@ -19,13 +15,18 @@ func getFileType(entry os.FileInfo) string {
 	return filenameToGopherType(entry.Name())
 }
 
-func listDirectory(path string, out io.Writer) error {
-	if entries, err := ioutil.ReadDir(path); err != nil {
+func listDirectory(out io.Writer, localPath string, selector string) error {
+	if entries, err := ioutil.ReadDir(localPath); err != nil {
 		return err
 	} else {
 		for _, entry := range entries {
+			name := entry.Name()
+			if name == "gophermap" || strings.HasPrefix(name, ".") {
+				continue
+			}
 			filetype := getFileType(entry)
-			if err := writeLine(out, filetype, entry.Name(), hostname, port); err != nil {
+			newSelector := filepath.Join(selector, name)
+			if err := writeLine(out, filetype, name, newSelector, hostname, port); err != nil {
 				return err
 			}
 		}
