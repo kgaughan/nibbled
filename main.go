@@ -5,8 +5,10 @@ import (
 	"flag"
 	"io"
 	"log"
+	"mime"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/armon/go-radix"
@@ -91,6 +93,15 @@ func main() {
 		} else {
 			go handleConnection(conn)
 		}
+	}
+}
+
+func filenameToGopherType(filename string) string {
+	mimetype := mime.TypeByExtension(filepath.Ext(filename))
+	if ft, ok := ftPrefixes.Get(mimetype); ok {
+		return ft.(string)
+	} else {
+		return "9"
 	}
 }
 
