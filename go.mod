@@ -1,4 +1,4 @@
-module gribbled
+module nibbled
 
 go 1.13
 
