@@ -6,20 +6,33 @@ import (
 	"log"
 	"net"
 	"os"
+	"path"
 	"strings"
 )
 
-var bind = flag.String("bind", ":70", "Interface/port to bind to")
-var root = flag.String("root", "/srv/gopher", "Root directory of server")
+var root string
+var hostname string
+var port string
+
+func init() {
+	defaultHostname, err := os.Hostname()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	flag.StringVar(&root, "root", "/srv/gopher", "Root directory of server")
+	flag.StringVar(&hostname, "hostname", defaultHostname, "Hostname to present")
+	flag.StringVar(&port, "port", "70", "Port to bind to")
+}
 
 func main() {
 	flag.Parse()
 
-	if _, err := os.Stat(*root); os.IsNotExist(err) {
-		log.Fatalf("Root directory '%v' not found", *root)
+	if _, err := os.Stat(root); os.IsNotExist(err) {
+		log.Fatalf("Root directory '%v' not found", root)
 	}
 
-	ln, err := net.Listen("tcp", *bind)
+	ln, err := net.Listen("tcp", hostname+":"+port)
 	if err != nil {
 		log.Fatal(err)
 	}
