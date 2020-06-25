@@ -59,6 +59,7 @@ func init() {
 	// map[string]string literal (type map[string]string) as type
 	// map[string]interface {} in argument to radix.NewFromMap', which is
 	// unfortunate.
+	ftPrefixes = radix.New()
 	for prefix, ft := range filetypes {
 		ftPrefixes.Insert(prefix, ft)
 	}
