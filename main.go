@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+var Version string
+
 var root string
 var hostname string
 var port string
