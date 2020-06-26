@@ -85,13 +85,15 @@ func resolve(out io.Writer, localPath string, selector string) error {
 	} else if fi.IsDir() {
 		gophermap := filepath.Join(localPath, "gophermap")
 		if _, err := os.Stat(gophermap); err == nil {
-			return sendFile(out, gophermap)
+			err := loadGopherMap(out, localPath, selector)
+			out.Write([]byte(".\r\n"))
+			return err
 		}
 		if catalogue, err := listDirectory(localPath, selector); err != nil {
 			return err
 		} else {
-			_, err := write(out, catalogue)
-			return err
+			write(out, catalogue)
+			return nil
 		}
 	}
 
