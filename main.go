@@ -83,6 +83,10 @@ func resolve(out io.Writer, localPath string, selector string) error {
 	if fi, err := os.Stat(localPath); err != nil {
 		return fmt.Errorf("Cannot find %s", selector)
 	} else if fi.IsDir() {
+		gophermap := filepath.Join(localPath, "gophermap")
+		if _, err := os.Stat(gophermap); err == nil {
+			return sendFile(out, gophermap)
+		}
 		if catalogue, err := listDirectory(localPath, selector); err != nil {
 			return err
 		} else {
@@ -91,16 +95,17 @@ func resolve(out io.Writer, localPath string, selector string) error {
 		}
 	}
 
-	log.Printf("Opening %v", localPath)
-	if f, err := os.Open(localPath); err != nil {
-		return err
-	} else {
-		log.Printf("Sending %v", localPath)
-		defer f.Close()
-		if _, err := io.Copy(out, f); err != nil {
-			return err
-		}
-	}
+	return sendFile(out, localPath)
+}
 
+func sendFile(out io.Writer, localPath string) error {
+	f, err := os.Open(localPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := io.Copy(out, f); err != nil {
+		return err
+	}
 	return nil
 }
