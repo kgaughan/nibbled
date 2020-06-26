@@ -7,48 +7,68 @@ import (
 	"github.com/armon/go-radix"
 )
 
+const (
+	FILE     = '0'
+	MENU     = '1'
+	ERROR    = '3'
+	ARCHIVE  = '5'
+	SEARCH   = '7'
+	TELNET   = '8'
+	BINARY   = '9'
+	MIRROR   = '+'
+	GIF      = 'g'
+	IMAGE    = 'I'
+	INFO     = 'i'
+	HTML     = 'h'
+	DOCUMENT = 'd'
+	AUDIO    = 's'
+	VIDEO    = ';'
+	CALENDAR = 'c'
+	MIME     = 'M'
+)
+
 // This should be a pretty decent mapping of mimetypes to Gopher file types. I
 // just gave /etc/mime.types a quick review on my machine and used my best
 // judgement to map them to gopher's types. If nothing matches this list, it's
 // treated as type '9'. This should probably be supplemented by something that
 // checks the file extension.
-var filetypes = map[string]string{
-	"text/":                               "0",
-	"application/gzip":                    "5",
-	"application/java-archive":            "5",
-	"application/rar":                     "5",
-	"application/zip":                     "5",
-	"application/x-cab":                   "5",
-	"application/x-cbr":                   "5",
-	"application/x-cbt":                   "5",
-	"application/x-cbz":                   "5",
-	"application/x-cpio":                  "5",
-	"application/x-gtar":                  "5",
-	"application/x-tar":                   "5",
-	"application/x-xz":                    "5",
-	"image/gif":                           "g",
-	"text/html":                           "h",
-	"application/xhtml+xml":               "h",
-	"image/":                              "I",
-	"application/msaccess":                "d",
-	"application/msword":                  "d",
-	"application/pdf":                     "d",
-	"application/postscript":              "d",
-	"application/rtf":                     "d",
-	"application/vnd.ms-excel":            "d",
-	"application/vnd.ms-powerpoint":       "d",
-	"application/vnd.ms-word":             "d",
-	"application/vnd.oasis.opendocument.": "d",
-	"application/vnd.openxmlformats-officedocument.": "d",
-	"application/x-dvi": "d",
-	"text/rtf":          "d",
-	"audio/":            "s",
-	"video/":            ";",
-	"text/calendar":     "c",
-	"text/x-vcalendar":  "c",
-	"application/mbox":  "M",
-	"message/":          "M",
-	"multipart/":        "M",
+var filetypes = map[string]byte{
+	"text/":                               FILE,
+	"application/gzip":                    ARCHIVE,
+	"application/java-archive":            ARCHIVE,
+	"application/rar":                     ARCHIVE,
+	"application/zip":                     ARCHIVE,
+	"application/x-cab":                   ARCHIVE,
+	"application/x-cbr":                   ARCHIVE,
+	"application/x-cbt":                   ARCHIVE,
+	"application/x-cbz":                   ARCHIVE,
+	"application/x-cpio":                  ARCHIVE,
+	"application/x-gtar":                  ARCHIVE,
+	"application/x-tar":                   ARCHIVE,
+	"application/x-xz":                    ARCHIVE,
+	"image/gif":                           GIF,
+	"text/html":                           HTML,
+	"application/xhtml+xml":               HTML,
+	"image/":                              IMAGE,
+	"application/msaccess":                DOCUMENT,
+	"application/msword":                  DOCUMENT,
+	"application/pdf":                     DOCUMENT,
+	"application/postscript":              DOCUMENT,
+	"application/rtf":                     DOCUMENT,
+	"application/vnd.ms-excel":            DOCUMENT,
+	"application/vnd.ms-powerpoint":       DOCUMENT,
+	"application/vnd.ms-word":             DOCUMENT,
+	"application/vnd.oasis.opendocument.": DOCUMENT,
+	"application/vnd.openxmlformats-officedocument.": DOCUMENT,
+	"application/x-dvi": DOCUMENT,
+	"text/rtf":          DOCUMENT,
+	"audio/":            AUDIO,
+	"video/":            VIDEO,
+	"text/calendar":     CALENDAR,
+	"text/x-vcalendar":  CALENDAR,
+	"application/mbox":  MIME,
+	"message/":          MIME,
+	"multipart/":        MIME,
 }
 
 var ftPrefixes *radix.Tree
@@ -65,11 +85,11 @@ func init() {
 	}
 }
 
-func filenameToGopherType(filename string) string {
+func filenameToGopherType(filename string) byte {
 	mimetype := mime.TypeByExtension(filepath.Ext(filename))
 	if _, ft, ok := ftPrefixes.LongestPrefix(mimetype); ok {
-		return ft.(string)
+		return ft.(byte)
 	} else {
-		return "9"
+		return BINARY
 	}
 }

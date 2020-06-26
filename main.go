@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -36,7 +37,7 @@ func main() {
 		log.Fatalf("Root directory '%v' not found", root)
 	}
 
-	ln, err := net.Listen("tcp", hostname+":"+port)
+	ln, err := net.Listen("tcp", net.JoinHostPort(hostname, port))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +45,7 @@ func main() {
 
 	for {
 		if conn, err := ln.Accept(); err != nil {
-			log.Println(err)
+			log.Print(err)
 		} else {
 			go handleConnection(conn)
 		}
@@ -63,36 +64,43 @@ func handleConnection(conn net.Conn) {
 		if parts[0] == "." {
 			parts[0] = ""
 		}
-		log.Printf("%q", parts)
 		if strings.HasPrefix(parts[0], "..") {
 			writeError(conn, "Bad selector")
 			return
 		}
 
 		localPath := filepath.Join(root, parts[0])
-		if fi, err := os.Stat(localPath); err == nil {
-			if fi.IsDir() {
-				if err := listDirectory(conn, localPath, parts[0]); err != nil {
-					log.Print(err)
-					return
-				}
-			} else if f, err := os.Open(localPath); err != nil {
-				log.Print(err)
-				writeError(conn, "Could not open")
-				return
-			} else {
-				defer f.Close()
-				if _, err := io.Copy(conn, f); err != nil {
-					log.Print(err)
-					return
-				}
-			}
-		} else {
+		if err := resolve(conn, localPath, parts[0]); err != nil {
 			log.Print(err)
-			writeError(conn, "Bad selector")
-			return
+			writeError(conn, err.Error())
 		}
 	} else if err := scanner.Err(); err != nil {
 		log.Print(err)
 	}
+}
+
+func resolve(out io.Writer, localPath string, selector string) error {
+	if fi, err := os.Stat(localPath); err != nil {
+		return fmt.Errorf("Cannot find %s", selector)
+	} else if fi.IsDir() {
+		if catalogue, err := listDirectory(localPath, selector); err != nil {
+			return err
+		} else {
+			_, err := write(out, catalogue)
+			return err
+		}
+	}
+
+	log.Printf("Opening %v", localPath)
+	if f, err := os.Open(localPath); err != nil {
+		return err
+	} else {
+		log.Printf("Sending %v", localPath)
+		defer f.Close()
+		if _, err := io.Copy(out, f); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

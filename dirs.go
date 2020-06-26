@@ -1,35 +1,52 @@
 package main
 
 import (
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func getFileType(entry os.FileInfo) string {
+type Catalogue []Entry
+
+func (c Catalogue) String() string {
+	var builder strings.Builder
+	for _, entry := range c {
+		builder.WriteString(entry.String())
+	}
+	builder.WriteString(".\r\n")
+	return builder.String()
+}
+
+func getFileType(entry os.FileInfo) byte {
 	if entry.IsDir() {
-		return "1"
+		return MENU
 	}
 	return filenameToGopherType(entry.Name())
 }
 
-func listDirectory(out io.Writer, localPath string, selector string) error {
-	if entries, err := ioutil.ReadDir(localPath); err != nil {
-		return err
-	} else {
-		for _, entry := range entries {
-			name := entry.Name()
-			if name == "gophermap" || strings.HasPrefix(name, ".") {
-				continue
-			}
-			filetype := getFileType(entry)
-			newSelector := filepath.Join(selector, name)
-			if err := writeLine(out, filetype, name, newSelector, hostname, port); err != nil {
-				return err
-			}
-		}
-		return nil
+func listDirectory(localPath string, selector string) (Catalogue, error) {
+	entries, err := ioutil.ReadDir(localPath)
+	if err != nil {
+		return nil, err
 	}
+	return parseDirectory(entries, selector), nil
+}
+
+func parseDirectory(entries []os.FileInfo, selector string) Catalogue {
+	var result Catalogue
+	for _, entry := range entries {
+		name := entry.Name()
+		if name == "gophermap" || strings.HasPrefix(name, ".") {
+			continue
+		}
+		result = append(result, Entry{
+			Type:     getFileType(entry),
+			Name:     name,
+			Selector: filepath.Join(selector, name),
+			Host:     hostname,
+			Port:     port,
+		})
+	}
+	return result
 }
