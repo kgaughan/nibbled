@@ -1,13 +1,13 @@
 package main
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-type Catalogue []Entry
+type Catalogue []*Entry
 
 func (c Catalogue) String() string {
 	var builder strings.Builder
@@ -18,29 +18,29 @@ func (c Catalogue) String() string {
 	return builder.String()
 }
 
-func getFileType(entry os.FileInfo) byte {
+func getFileType(entry os.DirEntry) byte {
 	if entry.IsDir() {
 		return MENU
 	}
 	return filenameToGopherType(entry.Name())
 }
 
-func listDirectory(localPath string, selector string) (Catalogue, error) {
-	entries, err := ioutil.ReadDir(localPath)
+func listDirectory(localPath, selector string) (Catalogue, error) {
+	entries, err := os.ReadDir(localPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot list directory: %w", err)
 	}
 	return parseDirectory(entries, selector), nil
 }
 
-func parseDirectory(entries []os.FileInfo, selector string) Catalogue {
-	var result Catalogue
+func parseDirectory(entries []os.DirEntry, selector string) Catalogue {
+	result := make(Catalogue, 0, 10)
 	for _, entry := range entries {
 		name := entry.Name()
 		if name == "gophermap" || strings.HasPrefix(name, ".") {
 			continue
 		}
-		result = append(result, Entry{
+		result = append(result, &Entry{
 			Type:     getFileType(entry),
 			Name:     name,
 			Selector: filepath.Join(selector, name),

@@ -89,7 +89,6 @@ func filenameToGopherType(filename string) byte {
 	mimetype := mime.TypeByExtension(filepath.Ext(filename))
 	if _, ft, ok := ftPrefixes.LongestPrefix(mimetype); ok {
 		return ft.(byte)
-	} else {
-		return BINARY
 	}
+	return BINARY
 }

@@ -1,5 +1,3 @@
-VERSION:=0.1.0
-
 SOURCE:=$(wildcard *.go)
 
 build: go.mod nibbled
@@ -7,7 +5,11 @@ build: go.mod nibbled
 tidy: go.mod
 
 nibbled: $(SOURCE)
-	CGO_ENABLED=0 go build -trimpath -ldflags '-s -w -X main.Version=$(VERSION)'
+	CGO_ENABLED=0 go build -tags netgo -trimpath -ldflags '-s -w'
+
+update:
+	go get -u ./...
+	go mod tidy
 
 go.mod: $(SOURCE)
 	go mod tidy
@@ -17,4 +19,4 @@ test:
 
 .DEFAULT: build
 
-.PHONY: build test tidy
+.PHONY: build test tidy update

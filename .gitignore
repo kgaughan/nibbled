@@ -9,3 +9,5 @@
 
 # The built daemon, if built in the curent directory.
 /nibbled
+
+/dist/
