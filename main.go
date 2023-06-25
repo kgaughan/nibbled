@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -13,25 +14,39 @@ import (
 	"strings"
 )
 
-var Version string
+var version = "notset"
 
-var root string
-var hostname string
-var port string
+var (
+	printVersion bool
+	root         string
+	hostname     string
+	port         string
+)
+
+var errCantResolve = errors.New("can't resolve selector")
 
 func init() {
-	defaultHostname, err := os.Hostname()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	flag.BoolVar(&printVersion, "version", false, "Print version and exit")
 	flag.StringVar(&root, "root", "/srv/gopher", "Root directory of server")
-	flag.StringVar(&hostname, "hostname", defaultHostname, "Hostname to present")
+	flag.StringVar(&hostname, "hostname", "localhost", "Hostname to present")
 	flag.StringVar(&port, "port", "70", "Port to bind to")
+
+	flag.Usage = func() {
+		out := flag.CommandLine.Output()
+		name := path.Base(os.Args[0])
+		fmt.Fprintf(out, "%s - a server for the Gopher protocol.\n\n", name)
+		fmt.Fprintf(out, "Usage:\n\n")
+		flag.PrintDefaults()
+	}
 }
 
 func main() {
 	flag.Parse()
+
+	if printVersion {
+		fmt.Println(version)
+		return
+	}
 
 	if _, err := os.Stat(root); os.IsNotExist(err) {
 		log.Fatalf("Root directory '%v' not found", root)
@@ -65,36 +80,45 @@ func handleConnection(conn net.Conn) {
 			parts[0] = ""
 		}
 		if strings.HasPrefix(parts[0], "..") {
-			writeError(conn, "Bad selector")
+			if err := writeError(conn, "Bad selector"); err != nil {
+				log.Print(err)
+			}
 			return
 		}
 
 		localPath := filepath.Join(root, parts[0])
 		if err := resolve(conn, localPath, parts[0]); err != nil {
 			log.Print(err)
-			writeError(conn, err.Error())
+			if err := writeError(conn, err.Error()); err != nil {
+				log.Print(err)
+			}
 		}
 	} else if err := scanner.Err(); err != nil {
 		log.Print(err)
 	}
 }
 
-func resolve(out io.Writer, localPath string, selector string) error {
+func resolve(out io.Writer, localPath, selector string) error {
 	if fi, err := os.Stat(localPath); err != nil {
-		return fmt.Errorf("Cannot find %s", selector)
+		return fmt.Errorf("%q: %w", selector, errCantResolve)
 	} else if fi.IsDir() {
 		gophermap := filepath.Join(localPath, "gophermap")
 		if _, err := os.Stat(gophermap); err == nil {
-			err := loadGopherMap(out, localPath, selector)
-			out.Write([]byte(".\r\n"))
+			if err := loadGopherMap(out, localPath, selector); err != nil {
+				return err //nolint:wrapcheck
+			}
+			if _, err := out.Write([]byte(".\r\n")); err != nil {
+				return err //nolint:wrapcheck
+			}
+		}
+		catalogue, err := listDirectory(localPath, selector)
+		if err != nil {
 			return err
 		}
-		if catalogue, err := listDirectory(localPath, selector); err != nil {
+		if _, err := write(out, catalogue); err != nil {
 			return err
-		} else {
-			write(out, catalogue)
-			return nil
 		}
+		return nil
 	}
 
 	return sendFile(out, localPath)
@@ -103,11 +127,11 @@ func resolve(out io.Writer, localPath string, selector string) error {
 func sendFile(out io.Writer, localPath string) error {
 	f, err := os.Open(localPath)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	defer f.Close()
 	if _, err := io.Copy(out, f); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	return nil
 }
