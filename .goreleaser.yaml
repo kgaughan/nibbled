@@ -71,6 +71,9 @@ nfpms:
     homepage: "https://github.com/kgaughan/nibbled"
     maintainer: "Keith Gaughan <k+nibbled@stereochro.me>"
     bindir: /usr/libexec
+    contents:
+      - src: nibbled.1
+        dest: /usr/share/man/man1/nibbled.1
     license: MIT
     formats:
       - rpm
