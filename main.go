@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -12,9 +11,11 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	flag "github.com/spf13/pflag"
 )
 
-var version = "notset"
+var version = "invalid"
 
 var (
 	printVersion bool
@@ -26,16 +27,15 @@ var (
 var errCantResolve = errors.New("can't resolve selector")
 
 func init() {
-	flag.BoolVar(&printVersion, "version", false, "Print version and exit")
-	flag.StringVar(&root, "root", "/srv/gopher", "Root directory of server")
-	flag.StringVar(&hostname, "hostname", "localhost", "Hostname to present")
-	flag.StringVar(&port, "port", "70", "Port to bind to")
+	flag.BoolVarP(&printVersion, "version", "V", false, "Print version and exit")
+	flag.StringVarP(&root, "root", "r", "/srv/gopher", "Root directory of server")
+	flag.StringVarP(&hostname, "hostname", "h", "localhost", "Hostname to present")
+	flag.StringVarP(&port, "port", "p", "70", "Port to bind to")
 
 	flag.Usage = func() {
-		out := flag.CommandLine.Output()
 		name := path.Base(os.Args[0])
-		fmt.Fprintf(out, "%s - a server for the Gopher protocol.\n\n", name)
-		fmt.Fprintf(out, "Usage:\n\n")
+		fmt.Fprintf(os.Stderr, "%s - a server for the Gopher protocol.\n\n", name)
+		fmt.Fprintf(os.Stderr, ":\n\n")
 		flag.PrintDefaults()
 	}
 }
