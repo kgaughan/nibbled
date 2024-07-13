@@ -6,7 +6,7 @@ on:
   - pull_request
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -14,6 +14,6 @@ jobs:
     - name: Lint
       uses: golangci/golangci-lint-action@v3
       with:
-        version: v1.52.2
+        version: v1.59.1
         args: --issues-exit-code=0
         only-new-issues: true
