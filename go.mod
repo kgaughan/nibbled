@@ -1,4 +1,4 @@
-module nibbled
+module github.com/kgaughan/nibbled
 
 go 1.18
 

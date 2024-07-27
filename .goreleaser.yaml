@@ -1,4 +1,6 @@
 ---
+version: 2
+
 before:
   hooks:
     - go mod tidy
@@ -19,6 +21,7 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
     tags:
       - netgo
 
@@ -27,7 +30,7 @@ brews:
     ids:
       - archives
     homepage: "https://github.com/kgaughan/nibbled"
-    tap:
+    repository:
       owner: kgaughan
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
@@ -80,8 +83,16 @@ nfpms:
     formats:
       - rpm
 
+dockers:
+  - image_templates:
+      - "{{ .Env.REGISTRY }}/{{ .Env.IMAGE }}:{{ .Tag }}"
+    skip_push: auto
+    use: buildx
+    dockerfile: Dockerfile
+
 checksum:
-  name_template: "checksums.txt"
+  algorithm: sha256
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
