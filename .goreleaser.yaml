@@ -82,6 +82,10 @@ nfpms:
     license: MIT
     formats:
       - rpm
+    overrides:
+      rpm:
+        dependencies:
+          - shared-mime-info
 
 dockers:
   - image_templates:
