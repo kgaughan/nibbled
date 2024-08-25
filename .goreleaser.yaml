@@ -94,6 +94,8 @@ dockers:
     skip_push: auto
     use: buildx
     dockerfile: Dockerfile
+    extra_files:
+      - contrib/mime.types
 
 checksum:
   algorithm: sha256

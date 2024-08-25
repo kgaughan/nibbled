@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.documentation=https://kgaughan.github.io/nibbled/
 
 # From https://packages.debian.org/sid/media-types
 # The file is licensed as public domain.
-COPY ./contrib/mime.types /etc/mime.types
+COPY contrib/mime.types /etc/
 
 COPY nibbled .
 EXPOSE 70
