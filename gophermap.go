@@ -42,7 +42,10 @@ func processGopherMap(in io.Reader, out io.Writer, localPath, selector string) e
 			if err == nil {
 				_, err = write(out, catalogue)
 			}
-			return fmt.Errorf("could not list directory: %w", err)
+			if err != nil {
+				return fmt.Errorf("cannot list directory: %w", err)
+			}
+			return nil
 		}
 		if !bytes.ContainsRune(line, '\t') {
 			if _, err := out.Write([]byte("i")); err != nil {
