@@ -9,4 +9,5 @@ LABEL org.opencontainers.image.source=https://github.com/kgaughan/nibbled
 LABEL org.opencontainers.image.documentation=https://kgaughan.github.io/nibbled/
 
 COPY nibbled .
+EXPOSE 70
 ENTRYPOINT ["/nibbled"]
