@@ -2,7 +2,7 @@
 
 nibbled is a [Gopher][] daemon.
 
-This is yet another COVID 19 project, reviving an old project I'd intended on starting when I first started using Go in anger.
+This is yet another COVID-19 project, reviving an old project I'd intended on starting when I first started using Go in anger.
 
 It has partial [gophermap][] support, but only supports a subset of [Gophernicus][]'s functionality. It supports `#`, `.`, and `*`.
 
