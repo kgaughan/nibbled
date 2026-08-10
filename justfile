@@ -56,7 +56,7 @@ tests:
 # generate HTML report from coverage data
 [group('testing')]
 coverage-html: tests
-	sed -E '/\/(mockaws|testutils)\//d' coverage.out | go tool cover -html=/dev/stdin -o coverage.html
+	go tool cover -html=coverage.out -o coverage.html
 
 # run `goreleaser release` without publishing anything
 [group('testing')]
