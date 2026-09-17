@@ -8,10 +8,12 @@ linters:
     - errcheck
     - errname
     - errorlint
+    - forcetypeassert
     - godot
     - gosec
     - govet
     - ineffassign
+    - noctx
     - nonamedreturns
     - revive
     - staticcheck
@@ -20,6 +22,22 @@ linters:
     - unused
     - whitespace
     - wrapcheck
+  disable:
+    - cyclop
+    - depguard
+    - exhaustruct
+    - forbidigo
+    - gochecknoglobals
+    - gochecknoinits
+    - gomodguard
+    - gomodguard_v2
+    - mnd
+    - nestif
+    - nlreturn
+    - noinlineerr
+    - nolintlint
+    - wsl
+    - wsl_v5
   exclusions:
     generated: lax
     presets:
