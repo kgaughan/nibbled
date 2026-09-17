@@ -1,6 +1,6 @@
 module github.com/kgaughan/nibbled
 
-go 1.18
+go 1.22
 
 require (
 	github.com/armon/go-radix v1.0.0

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -52,7 +53,9 @@ func main() {
 		log.Fatalf("Root directory '%v' not found", root)
 	}
 
-	ln, err := net.Listen("tcp", net.JoinHostPort(hostname, port))
+	ctx := context.Background()
+	lc := net.ListenConfig{}
+	ln, err := lc.Listen(ctx, "tcp", net.JoinHostPort(hostname, port))
 	if err != nil {
 		log.Fatal(err)
 	}
